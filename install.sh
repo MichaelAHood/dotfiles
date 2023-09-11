@@ -1,5 +1,6 @@
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
+## Install utils
 brew install curl
 brew install coreutils
 brew install binutils
@@ -20,3 +21,10 @@ brew install watch
 brew install wdiff --with-gettext
 brew install wget
 brew install ag
+
+## Install Python stuff
+brew install poetry
+brew install pyenv
+
+## Java/Typescript
+curl -fsSL https://fnm.vercel.app/install | bash

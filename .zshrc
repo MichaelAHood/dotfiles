@@ -24,6 +24,9 @@
 # Github
 export GITHUB_TOKEN='xxx'
 
+# GPG
+export GPG_TTY=$(tty)
+
 
 # Get Git branch of current directory
 git_branch () {
@@ -61,23 +64,11 @@ if [ ! $(ssh-add -l | grep -o -e id_rsa) ]; then
 fi
 
 # Modify the prompt >"
-PROMPT="%{%F{green}%}%n%{%f%}@%{%F{blue}%}localbox %{%F{yellow}%}%~ %{>%f%}% "
+PROMPT="%{%F{green}%}%n%{%f%}@%{%F{blue}%}localbox %{%F{yellow}%}%1d %{>%f%}% "
 
 # Set our Homebrew Cask application directory
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 
-# Setup our $PATH
-# export PATH=$PATH:/usr/local/opt/php@7.1/bin
-# export PATH=$PATH:/usr/local/opt/php@7.1/sbin
-# export PATH=$PATH:/usr/local/bin
-# export PATH=$PATH:/usr/local/sbin
-# export PATH=$PATH:$HOME/bin
-# export PATH=$PATH:$HOME/.composer/vendor/bin
-
-# Add Github script projects
-# for i in $(ls -d $HOME/scripts/*); do
-#     PATH=$PATH:$i
-# done
 
 # Set default editor
 export EDITOR=code
@@ -87,13 +78,6 @@ export JOBS=max
 
 # Bump the maximum number of file descriptors you can have open
 ulimit -n 10240
-
-# Stuff to make wp-install.sh work correctly
-# http://stackoverflow.com/questions/19242275/re-error-illegal-byte-sequence-on-mac-os-x
-# export LC_CTYPE=C
-# # export LANG=C
-# export LC_ALL="en_US.UTF-8"
-# export LANG="en_US.UTF-8"
 
 # Print the date
 date '+%H:%M:%S %p / %A / %B %-d, %Y'
@@ -143,10 +127,6 @@ alias downloads='clear && cd ~/Downloads && ll'                                 
 cs() { cd "$@" &&  ls; }                                                        # Enter directory and list contents with ls
 cl() { cd "$@" && ll; }                                                         # Enter directory and list contents with ll
 site() { clear && cl $HOME/sites/"$@"; }                                        # Access site folders easier
-# wp-theme() { clear && cl $HOME/sites/"$@"/content/themes/"$@"; }                # Access a site theme folders easier
-# project() { clear && cl $HOME/projects/"$@"; }                                  # Access project folders easier
-# email() { clear && cl $HOME/projects/emails/"$@"; }                             # Access email folders easier
-
 
 #---------------------------------------------------------------------------------------------------------------------------------------
 #   3.  FOLDER MANAGEMENT
@@ -180,18 +160,6 @@ mkzip() { zip -r "${1%%/}.zip" "$1" ; }               # Create a *.zip archive o
 alias brewup='brew update && brew upgrade && brew cleanup'
 # alias brewup-cask='brew update && brew upgrade && brew cleanup && brew cask outdated | awk "{print $1}" | xargs brew cask reinstall && brew cask cleanup'
 
-# Hyper
-# alias update-hyper-plugins='cd ~/.hyper_plugins && rm -rf node_modules && rm package-lock.json && npm install && cd -'
-
-# browser-sync
-# alias bs='browser-sync'    # Browser Sync shorthand
-# bsdev() { browser-sync start --server --files '**/*.css, **/*.js, **/*.php, **/*.html, **/*.mustache, **/*.twig' --tunnel 'kjbrum'; }    # Start local project server
-# bsproxy() { browser-sync start --proxy "$1" --files '**/*.css, **/*.js, **/*.php, **/*.html, **/*.mustache, **/*.twig' --tunnel 'kjbrum'; }    # Proxy a local project
-
-# Grunt
-alias gw='grunt watch'    # Start the Grunt "watch" task
-alias gbs='grunt bs'      # Start the Grunt "browser-sync" task
-
 # Copy local files to a remote server
 dir-to-remote() { rsync -avz . $1; }
 
@@ -200,13 +168,6 @@ dir-to-remote() { rsync -avz . $1; }
 
 # Trash
 alias t='trash'
-
-# New WordPress site
-# new-wp() {
-#     cp -r ~/projects/sf-wp-deploy ~/sites/"$@"
-#     cd ~/sites/"$@"
-#     . config/prepare.sh
-# }
 
 # npm
 alias nrs='npm run start'
@@ -219,119 +180,30 @@ alias bcun='brew cask uninstall'
 alias bcup='brew cask reinstall'
 
 # Docker
-## IronBank login
-ironbanklogin() {
-    secret=$(op item get 'IronBank' --fields 'cli secret')
-    echo $secret | docker login registry1.dso.mil -u mhoodspearai --password-stdin
+killall() {
+    processids=$(docker ps -q)
+    if [ "$processids" = "" ];
+    then
+        echo "No running Docker containers."
+    else
+        echo "Killing docker containers:"
+        docker kill $processids
+    fi
 }
 
+## Yarn turbo aliases
+ytr() {
+    local script=$1
+    yarn turbo run $script
+}
 
+# Run last command with sudo
+alias sudover='sudo $(fc -ln -1)'
 
-
-# # Compass
-# alias cw='compass watch'
-
-# # # Create a new Foundation for Emails project
-# # alias ffe='foundation new --framework emails'
-
-# # Run last command with sudo
-# alias fuck='sudo $(fc -ln -1)'
-
-# # Switching shells
-# alias shell-to-zsh='chsh -s $(which zsh)'
-# alias shell-to-bash='chsh -s $(which bash)'
-
-# # Bundle shortcuts
-# alias bec='bundle exec cap'
-# alias becs='bundle exec cap staging'
-# alias becp='bundle exec cap production'
-
-# cap-staging() {
-#     while true; do
-#         read -ep 'Pull or push STAGING site? [pull/push] ' response
-#         case $response in
-#             pull )
-#                 while true; do
-#                     read -ep 'Are you sure you want to PULL changes from STAGING? [y/N] ' yesno
-#                     case $yesno in
-#                         [Yy]* )
-#                             bash -c 'bundle exec cap staging db:pull && bundle exec cap staging uploads:pull'
-#                             break
-#                             ;;
-#                         * )
-#                             break
-#                             ;;
-#                     esac
-#                 done
-#                 break
-#                 ;;
-#             push )
-#                 while true; do
-#                     read -ep 'Are you sure you want to PUSH changes to STAGING? [y/N] ' yesno
-#                     case $yesno in
-#                         [Yy]* )
-#                             bash -c 'bundle exec cap staging deploy && bundle exec cap staging db:push && bundle exec cap staging uploads:push'
-#                             break
-#                             ;;
-#                         * )
-#                             break
-#                             ;;
-#                     esac
-#                 done
-#                 break
-#                 ;;
-#         esac
-#     done
-# }
-
-# cap-production() {
-#     while true; do
-#         read -ep 'Pull or push PRODUCTION site? [pull/push] ' response
-#         case $response in
-#             pull )
-#                 while true; do
-#                     read -ep 'Are you sure you want to PULL changes from PRODUCTION? [y/N] ' yesno
-#                     case $yesno in
-#                         [Yy]* )
-#                             bash -c 'bundle exec cap production db:pull && bundle exec cap production uploads:pull'
-#                             break
-#                             ;;
-#                         * )
-#                             break
-#                             ;;
-#                     esac
-#                 done
-#                 break
-#                 ;;
-#             push )
-#                 while true; do
-#                     read -ep 'Are you sure you want to PUSH changes to PRODUCTION? [y/N] ' yesno
-#                     case $yesno in
-#                         [Yy]* )
-#                             bash -c 'bundle exec cap production deploy && bundle exec cap production db:push && bundle exec cap production uploads:push'
-#                             break
-#                             ;;
-#                         * )
-#                             break
-#                             ;;
-#                     esac
-#                 done
-#                 break
-#                 ;;
-#         esac
-#     done
-# }
-
-# # Start a web server to share the files in the current directory
-# startserver() {
-#     # PHP
-#     path="$1"
-#     if [ -z "$path" ]; then
-#         path="."
-#     fi
-#     open http://localhost:3000
-#     php -t $path -S localhost:3000
-# }
+# Start a web server to share the files in the current directory
+startserver() {
+    python -m http.server
+}
 
 # Display the weather using wttr.in
 weather() {
@@ -343,34 +215,34 @@ weather() {
     curl https://wttr.in/$location
 }
 
-# # Shorten a Github URL with git.io (https://github.com/blog/985-git-io-github-url-shortener)
-# gitio() {
-#     # Check for a URL
-#     if [ -z "$1" ]; then
-#         echo "You need to supply a URL to shorten..."
-#         return
-#     fi
+# Shorten a Github URL with git.io (https://github.com/blog/985-git-io-github-url-shortener)
+gitio() {
+    # Check for a URL
+    if [ -z "$1" ]; then
+        echo "You need to supply a URL to shorten..."
+        return
+    fi
 
-#     # Check for a code
-#     if [ -z "$2" ]; then
-#         echo "You need to supply a name for your shortened URL..."
-#         return
-#     fi
+    # Check for a code
+    if [ -z "$2" ]; then
+        echo "You need to supply a name for your shortened URL..."
+        return
+    fi
 
-#     curl -i https://git.io -F "url=$1" -F "code=$2"
-#     printf "\n"
-# }
+    curl -i https://git.io -F "url=$1" -F "code=$2"
+    printf "\n"
+}
 
-# # Download a website
-# dl-website() {
-#     polite=''
+# Download a website
+dl-website() {
+    polite=''
 
-#     if [[ $* == *--polite* ]]; then
-#         polite="--wait=2 --limit-rate=50K"
-#     fi
+    if [[ $* == *--polite* ]]; then
+        polite="--wait=2 --limit-rate=50K"
+    fi
 
-#     wget --recursive --page-requisites --convert-links --user-agent="Mozilla" $polite "$1";
-# }
+    wget --recursive --page-requisites --convert-links --user-agent="Mozilla" $polite "$1";
+}
 
 
 #---------------------------------------------------------------------------------------------------------------------------------------
@@ -586,3 +458,12 @@ eval "`fnm env --use-on-cd`"
 
 # Put libpq in path so we can run psql client
 export PATH="/usr/local/opt/libpq/bin:$PATH"
+
+# Load Pyenv automatically
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+
+# fnm
+export PATH="/Users/michaelhood/Library/Application Support/fnm:$PATH"
+eval "`fnm env`"
